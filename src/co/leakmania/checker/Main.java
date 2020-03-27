@@ -1,15 +1,15 @@
 package co.leakmania.checker;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import co.leakmania.checker.utils.Checker;
+import co.leakmania.checker.utils.FileEditor;
 import co.leakmania.checker.utils.Logger;
 
 public class Main {
-
+	
+	public static char splitChar = ':';
 	private static ArrayList<String> proxies = new ArrayList<>();
 	private static ArrayList<String> accounts = new ArrayList<>();
 	private static int threads;
@@ -17,10 +17,10 @@ public class Main {
 	private static int timeout;
 	
 	public static void main(String[] args) {
-		for (String account : readAllLines(new File(Logger.prompt("Accounts"))).split("\n")) {
+		for (String account : new FileEditor(new File(Logger.prompt("Accounts"))).readAllLines().split("\n")) {
 			accounts.add(account);
 		}
-		for (String proxy : readAllLines(new File(Logger.prompt("Proxies"))).split("\n")) {
+		for (String proxy : new FileEditor(new File(Logger.prompt("Proxies"))).readAllLines().split("\n")) {
 			proxies.add(proxy);
 		}
 		threads = Integer.parseInt(Logger.prompt("Threads"));
@@ -35,17 +35,4 @@ public class Main {
 		}
 	}
 	
-	public static String readAllLines(File file) {
-		try {
-			String lines = "";
-			Scanner s = new Scanner(file);
-			while (s.hasNextLine()) lines += s.nextLine() + "\n";
-			s.close();
-			return lines;
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 }

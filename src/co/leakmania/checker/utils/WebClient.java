@@ -2,10 +2,14 @@ package co.leakmania.checker.utils;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -18,76 +22,99 @@ import co.leakmania.checker.enums.Protocol;
 
 public class WebClient {
 	
-	private String URL;
-	private String UserAgent;
+	private String url;
+	private String userAgent;
+	private ArrayList<String> headers = new ArrayList<>();
 	private Protocol protocol = Protocol.HTTP;
 	private HttpURLConnection con;
 	private String proxy;
 	private int timeout;
 	
 	public WebClient() {
-		new WebClient(Protocol.HTTP, 400);
+		this.timeout = 400;
 	}
 	
 	public WebClient(Protocol protocol, int timeout) {
 		this.timeout = timeout;
-		this.protocol = protocol;
-		if (protocol == Protocol.HTTPS) {
-			try {
-				TrustManager[] trustAllCerts = new TrustManager[] {
-					new X509TrustManager() {
-						public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-							return null;
+		try {
+			if (protocol == Protocol.HTTPS) {
+				try {
+					TrustManager[] trustAllCerts = new TrustManager[] {
+						new X509TrustManager() {
+							public X509Certificate[] getAcceptedIssuers() {
+								return null;
+							}
+							public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+							public void checkServerTrusted(X509Certificate[] certs, String authType) {}
 						}
-						public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-						public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-					}
-				};
-				final SSLContext sc = SSLContext.getInstance("SSL");
-				sc.init(null, trustAllCerts, new java.security.SecureRandom());
-				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-				HostnameVerifier allHostsValid = new HostnameVerifier() {
-					public boolean verify(String hostname, SSLSession session) {
-						return true;
-					}
-				};
-				HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-			} catch (Exception e) {
-				e.printStackTrace();
+					};
+					final SSLContext sc = SSLContext.getInstance("SSL");
+					sc.init(null, trustAllCerts, new SecureRandom());
+					HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+					HostnameVerifier allHostsValid = new HostnameVerifier() {
+						public boolean verify(String hostname, SSLSession session) {
+							return true;
+						}
+					};
+					HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
+	public WebClient addHeaders(ArrayList<String> headers) {
+		for (String header : headers) addHeader(header);
+		return this;
+	}
+	
+	public WebClient addHeader(String header) {
+		this.headers.add(header); return this;
+	}
+	
+	public ArrayList<String> getHeaders() {
+		return this.headers;
+	}
+
 	public String get() throws Exception {
-		con = (HttpURLConnection)new URL(this.URL).openConnection();
+		con = (HttpURLConnection)new URL(this.url).openConnection();
 		con.setConnectTimeout(this.timeout);
-		con.addRequestProperty("User-Agent", UserAgent);
+		if (headers.size() == 0) {
+			con.addRequestProperty("User-Agent", userAgent);
+		} else {
+			for (String header : headers) {
+				con.addRequestProperty(header.split(":")[0], header.split(":")[1]);
+			}
+		}
 		BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
-		String lines = "";
-		String line;
+		String lines = ""; String line;
 		while ((line = br.readLine()) != null) lines += line;
 		br.close();
 		return lines;
 	}
 	
 	public String post(String content, String contentType) throws Exception {
-		con = (HttpURLConnection)new URL(this.URL).openConnection();
+		con = (HttpURLConnection)new URL(this.url).openConnection();
 		con.setConnectTimeout(this.timeout);
 		con.setRequestMethod("POST");
-		con.addRequestProperty("User-Agent", UserAgent);
-		con.setRequestProperty("Content-Type", contentType);
-		con.setRequestProperty("Content-Length", Integer.toString(content.getBytes().length));
-		con.setRequestProperty("Content-Language", "en-US");
-		con.setUseCaches (false);
-		con.setDoInput(true);
-		con.setDoOutput(true);
+		if (headers.size() == 0) {
+			con.addRequestProperty("User-Agent", userAgent);
+			con.setRequestProperty("Content-Type", contentType);
+			con.setRequestProperty("Content-Length", Integer.toString(content.getBytes().length));
+			con.setRequestProperty("Content-Language", "en-US");
+		} else {
+			for (String header : headers) {
+				con.addRequestProperty(header.split(":")[0], header.split(":")[1]);
+			}
+		}
+		con.setUseCaches(false); con.setDoInput(true); con.setDoOutput(true);
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(content);
-		wr.flush();
-		wr.close();
+		wr.writeBytes(content); wr.flush(); wr.close();
 		BufferedReader rd = new BufferedReader(new InputStreamReader(con.getInputStream()));
-		String lines = "";
-		String line;
+		String lines = ""; String line;
 		while ((line = rd.readLine()) != null) lines += line;
 		rd.close();
 		return lines;
@@ -102,21 +129,21 @@ public class WebClient {
 		return this.protocol;
 	}
 	
-	public WebClient setURL(String URL) {
-		this.URL = URL;
+	public WebClient setURL(String url) {
+		this.url = url;
 		return this;
 	}
 	
 	public String getURL() {
-		return this.URL;
+		return this.url;
 	}
 	
-	public WebClient setUserAgent(String UserAgent) {
-		this.UserAgent = UserAgent;
+	public WebClient setuserAgent(String userAgent) {
+		this.userAgent = userAgent;
 		return this;
 	}
 	
-	public String defaultUserAgent() {
+	public String getDefaultUserAgent() {
 		return "MC-Checker/1.0";
 	}
 	
