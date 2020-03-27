@@ -1,8 +1,11 @@
 package co.leakmania.checker.utils;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class Checker {
+	
+	private ArrayList<String> results = new ArrayList<>();
 	
 	public Checker(int retries, int timeout, ArrayList<String> accounts, ArrayList<String> proxies) {
 		new Thread(() -> {
@@ -21,7 +24,7 @@ public class Checker {
 					}
 					switch (mapi.setUsername(credentials[0]).setPassword(credentials[1]).auth()) {
 						case WORKING:
-							Logger.println("[" + threadName + "] " + s + " [WORKING]");
+							Logger.println("[" + threadName + "] " + s + " [WORKING]"); results.add(s);
 							break;
 						case DEAD:
 							Logger.println("[" + threadName + "] " + s + " [DEAD]");
@@ -29,6 +32,7 @@ public class Checker {
 					}
 				}
 			}
+			new FileEditor(new File("results.txt")).addLines(results);
 		}).start();
 	}
 	
