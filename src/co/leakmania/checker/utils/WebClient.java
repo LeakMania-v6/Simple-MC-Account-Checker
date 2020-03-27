@@ -36,33 +36,29 @@ public class WebClient {
 	
 	public WebClient(Protocol protocol, int timeout) {
 		this.timeout = timeout;
-		try {
-			if (protocol == Protocol.HTTPS) {
-				try {
-					TrustManager[] trustAllCerts = new TrustManager[] {
-						new X509TrustManager() {
-							public X509Certificate[] getAcceptedIssuers() {
-								return null;
-							}
-							public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-							public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+		if (protocol == Protocol.HTTPS) {
+			try {
+				TrustManager[] trustAllCerts = new TrustManager[] {
+					new X509TrustManager() {
+						public X509Certificate[] getAcceptedIssuers() {
+							return null;
 						}
-					};
-					final SSLContext sc = SSLContext.getInstance("SSL");
-					sc.init(null, trustAllCerts, new SecureRandom());
-					HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-					HostnameVerifier allHostsValid = new HostnameVerifier() {
-						public boolean verify(String hostname, SSLSession session) {
-							return true;
-						}
-					};
-					HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+						public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+						public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+					}
+				};
+				final SSLContext sc = SSLContext.getInstance("SSL");
+				sc.init(null, trustAllCerts, new SecureRandom());
+				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+				HostnameVerifier allHostsValid = new HostnameVerifier() {
+					public boolean verify(String hostname, SSLSession session) {
+						return true;
+					}
+				};
+				HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
