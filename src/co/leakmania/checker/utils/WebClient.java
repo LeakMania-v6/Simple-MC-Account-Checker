@@ -23,10 +23,14 @@ public class WebClient {
 	private Protocol protocol = Protocol.HTTP;
 	private HttpURLConnection con;
 	private String proxy;
+	private int timeout;
 	
-	public WebClient() {}
+	public WebClient() {
+		new WebClient(Protocol.HTTP, 400);
+	}
 	
-	public WebClient(Protocol protocol) {
+	public WebClient(Protocol protocol, int timeout) {
+		this.timeout = timeout;
 		this.protocol = protocol;
 		if (protocol == Protocol.HTTPS) {
 			try {
@@ -54,8 +58,9 @@ public class WebClient {
 		}
 	}
 
-	public String httpGet() throws Exception {
+	public String get() throws Exception {
 		con = (HttpURLConnection)new URL(this.URL).openConnection();
+		con.setConnectTimeout(this.timeout);
 		con.addRequestProperty("User-Agent", UserAgent);
 		BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String lines = "";
@@ -65,8 +70,9 @@ public class WebClient {
 		return lines;
 	}
 	
-	public String httpPost(String content, String contentType) throws Exception {
+	public String post(String content, String contentType) throws Exception {
 		con = (HttpURLConnection)new URL(this.URL).openConnection();
+		con.setConnectTimeout(this.timeout);
 		con.setRequestMethod("POST");
 		con.addRequestProperty("User-Agent", UserAgent);
 		con.setRequestProperty("Content-Type", contentType);

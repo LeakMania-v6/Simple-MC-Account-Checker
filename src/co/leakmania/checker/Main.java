@@ -1,27 +1,51 @@
 package co.leakmania.checker;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 import co.leakmania.checker.utils.Checker;
 import co.leakmania.checker.utils.Logger;
-import co.leakmania.checker.utils.WebClient;
 
 public class Main {
-	
-	public String userID;
-	
-	public void test() {
-		userID = new Main().userID();
-	}
-	
-	public String userID() {
-		return "test";
-	}
+
+	private static ArrayList<String> proxies = new ArrayList<>();
+	private static ArrayList<String> accounts = new ArrayList<>();
+	private static int threads;
+	private static int maxRetries;
+	private static int timeout;
 	
 	public static void main(String[] args) {
-		File accounts = new File(Logger.prompt("Accounts Path"));
-		File proxies = new File(Logger.prompt("Proxies Path"));
-		new Checker(Integer.parseInt(Logger.prompt("Max Retries")), accounts, proxies);
+		for (String account : readAllLines(new File(Logger.prompt("Accounts"))).split("\n")) {
+			accounts.add(account);
+		}
+		for (String proxy : readAllLines(new File(Logger.prompt("Proxies"))).split("\n")) {
+			proxies.add(proxy);
+		}
+		threads = Integer.parseInt(Logger.prompt("Threads"));
+		maxRetries = Integer.parseInt(Logger.prompt("Max Retries"));
+		timeout = Integer.parseInt(Logger.prompt("Timeout"));
+		for (int i = 0; i != threads; i++) {
+			ArrayList<String> threadAccounts = new ArrayList<>();
+			for (int j = 0; j != (accounts.size() / threads); j++) {
+				threadAccounts.add(accounts.get(i));
+			}
+			new Checker(maxRetries, timeout , threadAccounts, proxies);
+		}
+	}
+	
+	public static String readAllLines(File file) {
+		try {
+			String lines = "";
+			Scanner s = new Scanner(file);
+			while (s.hasNextLine()) lines += s.nextLine() + "\n";
+			s.close();
+			return lines;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }
