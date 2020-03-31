@@ -2,10 +2,8 @@ package co.leakmania.checker.utils;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -30,9 +28,7 @@ public class WebClient {
 	private String proxy;
 	private int timeout;
 	
-	public WebClient() {
-		this.timeout = 400;
-	}
+	public WebClient() {this.timeout = 400;}
 	
 	public WebClient(Protocol protocol, int timeout) {
 		this.timeout = timeout;
@@ -117,8 +113,7 @@ public class WebClient {
 	}
 	
 	public WebClient setProtocol(Protocol protocol) {
-		this.protocol = protocol;
-		return this;
+		this.protocol = protocol; return this;
 	}
 	
 	public Protocol getProtocol() {
@@ -126,17 +121,15 @@ public class WebClient {
 	}
 	
 	public WebClient setURL(String url) {
-		this.url = url;
-		return this;
+		this.url = url; return this;
 	}
 	
 	public String getURL() {
 		return this.url;
 	}
 	
-	public WebClient setuserAgent(String userAgent) {
-		this.userAgent = userAgent;
-		return this;
+	public WebClient setUserAgent(String userAgent) {
+		this.userAgent = userAgent; return this;
 	}
 	
 	public String getDefaultUserAgent() {

@@ -3,6 +3,8 @@ package co.leakmania.checker.utils;
 import java.io.File;
 import java.util.ArrayList;
 
+import co.leakmania.checker.Main;
+
 public class Checker {
 	
 	private ArrayList<String> results = new ArrayList<>();
@@ -12,7 +14,7 @@ public class Checker {
 			String threadName = Thread.currentThread().getName();
 			MojangAPI mapi = new MojangAPI(proxies, timeout);
 			for (String s : accounts) {
-				String credentials[] = s.split(":");
+				String credentials[] = s.split(Main.splitChar);
 				for (int i = 0; i != retries; i++) {
 					switch (i) {
 						case 0:
