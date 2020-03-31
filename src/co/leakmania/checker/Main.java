@@ -33,7 +33,7 @@ public class Main {
 				ArrayList<String> threadAccounts = new ArrayList<>();
 				for (int k = 0; k != (accounts.size() / threads); k++) {
 					threadAccounts.add(accounts.get((i - 1)));
-					k--;
+					i--;
 				}
 				new Checker(maxRetries, timeout, threadAccounts, proxies);
 			}
